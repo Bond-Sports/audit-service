@@ -7,7 +7,8 @@ import { AuditLog } from './audit-log';
 
 const CategorySchema = new Schema(
 	{
-		id: { type: String, required: true, index: true, set: () => uuid.v4() },
+		id: { type: String, required: true, index: true, default: () => uuid.v4() },
+		organizationId: { type: Number, required: true, index: true },
 		name: { type: String, required: true },
 		description: { type: String, required: true },
 		deletedAt: {
@@ -17,6 +18,7 @@ const CategorySchema = new Schema(
 					storage: 'iso',
 				},
 			},
+			default: null,
 			required: false,
 		},
 	},
@@ -30,6 +32,7 @@ const CategorySchema = new Schema(
 							storage: 'iso',
 						},
 					},
+					rangeKey: true,
 				},
 			},
 			updatedAt: {

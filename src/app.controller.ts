@@ -1,11 +1,13 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
+import { AuditService } from './services/audit.service';
+import { PaginationQueryDto } from './types/dtos/general.dto';
 
 @Controller()
 export class AppController {
-	constructor() {}
+	constructor(private auditService: AuditService) {}
 
 	@Get('/')
-	healthCheck() {
-		return { success: true };
+	healthCheck(@Query() pagination: PaginationQueryDto) {
+		return this.auditService.getOrganizationAuditLogs(155, pagination);
 	}
 }

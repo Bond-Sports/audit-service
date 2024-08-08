@@ -2,15 +2,15 @@ import { IAuditLog, IPubSub } from '../types/interfaces';
 import { Inject, Injectable, Scope } from '@nestjs/common';
 import { REDIS_CLIENT } from '../types/constants';
 import { RedisClientType } from '@redis/client';
-import { ConfigKeys, configService } from './config.service';
+import { ConfigKeysEnum, configService } from './config.service';
 import { AuditService } from './audit.service';
-import { plainToClass } from 'class-transformer';
+import { plainToInstance } from 'class-transformer';
 import { AuditLog } from '../models/audit-log';
 import { Logger } from '../logger';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RedisPubSubService implements IPubSub<IAuditLog> {
-	private readonly channel: string = configService.getValue(ConfigKeys.PUB_SUB_CHANNEL);
+	private readonly channel: string = configService.getValue(ConfigKeysEnum.PUB_SUB_CHANNEL);
 
 	constructor(
 		@Inject(REDIS_CLIENT) private redisClient: RedisClientType,
@@ -23,14 +23,14 @@ export class RedisPubSubService implements IPubSub<IAuditLog> {
 	}
 
 	async onApplicationBootstrap() {
-		await this.redisClient.subscribe(this.channel, this.onMessage);
+		await this.redisClient.subscribe(this.channel, this.onMessage.bind(this));
 	}
 
 	private async onMessage(message: string): Promise<void> {
 		try {
 			Logger.info(` RedisPubSubService - Received message: ${message}`);
 
-			const data: AuditLog = plainToClass(JSON.parse(message), AuditLog);
+			const data: AuditLog = plainToInstance(AuditLog, JSON.parse(message));
 
 			const audit: AuditLog = await this.auditService.createAuditLog(data);
 

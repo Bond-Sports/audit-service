@@ -1,7 +1,7 @@
-type LoggerLevel = 'info' | 'error' | 'warn' | 'warning' | 'debug';
+type LoggerLevelEnum = 'info' | 'error' | 'warn' | 'warning' | 'debug';
 
 type TLogger = {
-	log(level: LoggerLevel, ...args: any[]): void;
+	log(level: LoggerLevelEnum, ...args: any[]): void;
 	info(...args: any[]): void;
 	error(...args: any[]): void;
 	warn(...args: any[]): void;
@@ -10,7 +10,7 @@ type TLogger = {
 };
 
 export const Logger: TLogger = {
-	log: function (level: LoggerLevel, ...args: any[]): void {
+	log: function (level: LoggerLevelEnum, ...args: any[]): void {
 		console[level](...args);
 	},
 	info: function (...args: any[]): void {

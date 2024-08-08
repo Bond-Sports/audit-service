@@ -1,30 +1,31 @@
 import { IDal } from './types/intefaces';
 import { IBaseAudit } from '../types/interfaces';
 import { ItemArray, ModelType } from 'dynamoose/dist/General';
-import { QueryResponse } from 'dynamoose/dist/ItemRetriever';
+import { Query, QueryResponse } from 'dynamoose/dist/ItemRetriever';
 import { PaginationQueryDto, PaginationResultDto } from '../types/dtos/general.dto';
 import { BadRequestException } from '@nestjs/common';
+import { OrderEnum } from '../types/enums';
+import * as uuid from 'uuid';
 
 export abstract class BaseDal<T extends IBaseAudit> implements IDal<T> {
 	protected constructor(private model: ModelType<T>) {}
 
 	async paginatedFind(organizationId: number, pagination: PaginationQueryDto): Promise<PaginationResultDto<T>> {
-		const response: QueryResponse<T> = await this.model
-			.query('organizationId')
-			.eq(organizationId)
-			.limit(pagination.limit)
-			.filter('deletedAt')
-			.eq(null)
-			.attribute('id')
-			.gt(pagination.lastId)
-			.sort('ascending')
-			.exec();
+		const queryBuilder: Query<T> = this.model.query({ organizationId }).limit(pagination.limit);
 
-		const entities: ItemArray<T> = await response.populate();
+		if (pagination.lastId) {
+			queryBuilder.startAt({ id: pagination.lastId, organizationId });
+		}
+
+		queryBuilder.filter('deletedAt').not().exists();
+
+		const response: QueryResponse<T> = await queryBuilder.exec();
+
+		const entities: T[] = await response.populate();
 
 		return {
-			lastId: response.lastKey.id,
-			data: [...entities],
+			lastId: response.lastKey?.id ?? null,
+			data: entities,
 		};
 	}
 	async find(organizationId: number): Promise<T[]> {
@@ -47,8 +48,8 @@ export abstract class BaseDal<T extends IBaseAudit> implements IDal<T> {
 	}
 
 	async create(data: T): Promise<T> {
-		const entity: T = new this.model(data);
-		await this.model.create(entity);
+		const entity: T = new this.model({ ...data, id: uuid.v4() });
+		await entity.save();
 		return entity;
 	}
 

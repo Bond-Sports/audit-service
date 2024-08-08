@@ -3,10 +3,10 @@ import * as path from 'path';
 
 require('dotenv').config();
 
-export enum ConfigKeys {
+export enum ConfigKeysEnum {
 	PORT = 'PORT',
-	DB_HOST = 'DB_HOST',
-	DB_PORT = 'DB_PORT',
+	DYNAMO_DB_HOST = 'DYNAMO_DB_HOST',
+	DYNAMO_DB_PORT = 'DYNAMO_DB_PORT',
 	DB_USERNAME = 'DB_USERNAME',
 	DB_PASSWORD = 'DB_PASSWORD',
 	DB_NAME = 'DB_NAME',
@@ -34,7 +34,7 @@ class ConfigService {
 	}
 
 	public getPort(): number {
-		return Number(this.getValue(ConfigKeys.PORT));
+		return Number(this.getValue(ConfigKeysEnum.PORT));
 	}
 
 	public getVersion(): string {
@@ -44,12 +44,12 @@ class ConfigService {
 
 export const configService: ConfigService = new ConfigService(process.env);
 configService.ensureValues([
-	ConfigKeys.PORT,
-	// ConfigKeys.DB_HOST,
-	// ConfigKeys.DB_PORT,
+	ConfigKeysEnum.PORT,
+	ConfigKeysEnum.DYNAMO_DB_HOST,
+	ConfigKeysEnum.DYNAMO_DB_PORT,
 	// ConfigKeys.DB_USERNAME,
 	// ConfigKeys.DB_PASSWORD,
 	// ConfigKeys.DB_NAME,
-	ConfigKeys.PUB_SUB_CHANNEL,
-	ConfigKeys.REDIS_WRITER_URL,
+	ConfigKeysEnum.PUB_SUB_CHANNEL,
+	ConfigKeysEnum.REDIS_WRITER_URL,
 ]);

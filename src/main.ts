@@ -1,11 +1,27 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ConfigKeys, configService } from './services/config.service';
+import { ConfigKeysEnum, configService } from './services/config.service';
 import { INestApplication } from '@nestjs/common';
 import { json, urlencoded } from 'express';
 import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
+import * as dynamoose from 'dynamoose';
+import { DynamoDB } from '@aws-sdk/client-dynamodb';
+import { Logger } from './logger';
 
-function configureSwagger(app: INestApplication) {
+async function connectToDynamodb() {
+	const host: string = configService.getValue(ConfigKeysEnum.DYNAMO_DB_HOST);
+	const port: string = configService.getValue(ConfigKeysEnum.DYNAMO_DB_PORT);
+
+	const database: DynamoDB = new dynamoose.aws.ddb.DynamoDB({
+		endpoint: `${host}:${port}`,
+	});
+
+	dynamoose.aws.ddb.set(database);
+
+	Logger.info(`Successfully connected to DynamoDB "${host}" on port "${port}"`);
+}
+
+function configureSwagger(app: INestApplication): void {
 	const port: number = configService.getPort();
 	const version: string = configService.getVersion();
 
@@ -37,7 +53,9 @@ async function bootstrap(): Promise<void> {
 
 	configureSwagger(app);
 
-	await app.listen(configService.getValue(ConfigKeys.PORT));
+	await connectToDynamodb();
+
+	await app.listen(configService.getValue(ConfigKeysEnum.PORT));
 }
 
 bootstrap();

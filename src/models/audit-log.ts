@@ -9,7 +9,7 @@ import { ActionType } from './action-type';
 
 const AuditLogSchema = new Schema(
 	{
-		id: { type: String, index: true, set: () => uuid.v4() },
+		id: { type: String, required: true, index: true, default: () => uuid.v4(), hashKey: true },
 		organizationId: { type: Number, index: true },
 		facilityId: { type: Number, required: false, index: true },
 		userId: { type: Number, required: true },
@@ -25,6 +25,7 @@ const AuditLogSchema = new Schema(
 					storage: 'iso',
 				},
 			},
+			default: null,
 			required: false,
 		},
 		categoryId: { type: String, required: false },
@@ -41,6 +42,7 @@ const AuditLogSchema = new Schema(
 							storage: 'iso',
 						},
 					},
+					rangeKey: true,
 				},
 			},
 			updatedAt: {
