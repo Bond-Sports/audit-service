@@ -23,10 +23,17 @@ export class RedisPubSubService implements IPubSub<IAuditLog> {
 	}
 
 	async onApplicationBootstrap() {
-		await this.redisClient.subscribe(this.channel, this.onMessage.bind(this));
+		await this.redisClient.subscribe(this.channel, this.onMessageHandler.bind(this));
+
+		Logger.info(` RedisPubSubService - Subscribed to channel "${this.channel}"`);
 	}
 
-	private async onMessage(message: string): Promise<void> {
+	/**
+	 * Handles incoming messages from the Redis Pub/Sub channel
+	 * @param message {string} - The message received from the Redis Pub/Sub channel
+	 * @private
+	 */
+	private async onMessageHandler(message: string): Promise<void> {
 		try {
 			Logger.info(` RedisPubSubService - Received message: ${message}`);
 
@@ -40,6 +47,10 @@ export class RedisPubSubService implements IPubSub<IAuditLog> {
 		}
 	}
 
+	/**
+	 * Publishes a message to the Redis Pub/Sub channel
+	 * @param message {object} - The message to publish to the Redis Pub/Sub channel
+	 */
 	async publish(message: object): Promise<void> {
 		await this.redisClient.publish(this.channel, JSON.stringify(message));
 	}

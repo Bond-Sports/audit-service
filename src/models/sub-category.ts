@@ -13,9 +13,9 @@ const SubCategorySchema = new Schema(
 		description: { type: String, required: true },
 		deletedAt: {
 			type: {
-				value: Date,
+				value: Number,
 				settings: {
-					storage: 'iso',
+					storage: 'milliseconds',
 				},
 			},
 			default: null,
@@ -27,20 +27,19 @@ const SubCategorySchema = new Schema(
 			createdAt: {
 				createdAt: {
 					type: {
-						value: Date,
+						value: Number,
 						settings: {
-							storage: 'iso',
+							storage: 'milliseconds',
 						},
 					},
-					rangeKey: true,
 				},
 			},
 			updatedAt: {
 				updatedAt: {
 					type: {
-						value: Date,
+						value: Number,
 						settings: {
-							storage: 'iso',
+							storage: 'milliseconds',
 						},
 					},
 				},

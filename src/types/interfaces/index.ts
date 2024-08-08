@@ -4,9 +4,9 @@ import { AnyItem } from 'dynamoose/dist/Item';
 export interface IBaseAudit extends AnyItem {
 	id: string;
 	organizationId: number;
-	createdAt: Date;
-	updatedAt: Date;
-	deletedAt?: Date;
+	createdAt: number;
+	updatedAt: number;
+	deletedAt?: number;
 }
 
 export interface IAuditLog extends IBaseAudit {

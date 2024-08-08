@@ -1,13 +1,18 @@
-import { Controller, Get, Query } from '@nestjs/common';
-import { AuditService } from './services/audit.service';
-import { PaginationQueryDto } from './types/dtos/general.dto';
+import { Controller, Get } from '@nestjs/common';
+import { HealthcheckService } from './services/health-check.service';
+import { HealthCheckResponseDto } from './types/dtos/health-check.dto';
+import { ApiOperation } from '@nestjs/swagger';
 
 @Controller()
 export class AppController {
-	constructor(private auditService: AuditService) {}
+	constructor(private healthCheckService: HealthcheckService) {}
 
 	@Get('/')
-	healthCheck(@Query() pagination: PaginationQueryDto) {
-		return this.auditService.getOrganizationAuditLogs(155, pagination);
+	@ApiOperation({
+		summary: 'Get Health',
+		description: 'Retrieve health information including the service version and health status.',
+	})
+	healthCheck(): Promise<HealthCheckResponseDto> {
+		return this.healthCheckService.checkHealth();
 	}
 }

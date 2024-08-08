@@ -10,6 +10,7 @@ import { ConfigKeysEnum, configService } from './services/config.service';
 import { createClient, RedisClientOptions } from '@redis/client';
 import { RedisPubSubService } from './services/redis-pub-sub.service';
 import { AuditService } from './services/audit.service';
+import { HealthcheckService } from './services/health-check.service';
 
 @Module({
 	imports: [],
@@ -20,6 +21,7 @@ import { AuditService } from './services/audit.service';
 		SubCategoryDal,
 		ActionTypeDal,
 		AuditService,
+		HealthcheckService,
 		{
 			provide: REDIS_CLIENT,
 			useFactory: async () => {

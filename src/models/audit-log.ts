@@ -20,9 +20,9 @@ const AuditLogSchema = new Schema(
 		response: { type: Object, required: false },
 		deletedAt: {
 			type: {
-				value: Date,
+				value: Number,
 				settings: {
-					storage: 'iso',
+					storage: 'milliseconds',
 				},
 			},
 			default: null,
@@ -37,20 +37,19 @@ const AuditLogSchema = new Schema(
 			createdAt: {
 				createdAt: {
 					type: {
-						value: Date,
+						value: Number,
 						settings: {
-							storage: 'iso',
+							storage: 'milliseconds',
 						},
 					},
-					rangeKey: true,
 				},
 			},
 			updatedAt: {
 				updatedAt: {
 					type: {
-						value: Date,
+						value: Number,
 						settings: {
-							storage: 'iso',
+							storage: 'milliseconds',
 						},
 					},
 				},
@@ -107,12 +106,12 @@ export class AuditLog {
 	@Type(() => Number)
 	organizationId: number;
 
-	@Type(() => Date)
-	createdAt: Date;
+	@Type(() => Number)
+	createdAt: number;
 
-	@Type(() => Date)
-	updatedAt: Date;
+	@Type(() => Number)
+	updatedAt: number;
 
-	@Type(() => Date)
-	deletedAt?: Date;
+	@Type(() => Number)
+	deletedAt?: number;
 }
