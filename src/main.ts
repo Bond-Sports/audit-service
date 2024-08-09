@@ -4,8 +4,8 @@ import { ConfigKeysEnum, configService } from './config/config.service';
 import { INestApplication, INestMicroservice } from '@nestjs/common';
 import { json, urlencoded } from 'express';
 import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
-import { Transport } from '@nestjs/microservices';
 import { EventsModule } from './events/events.module';
+import { Logger } from './config/logger';
 
 function configureSwagger(app: INestApplication): void {
 	const port: number = configService.getPort();
@@ -18,7 +18,7 @@ function configureSwagger(app: INestApplication): void {
 		.addBearerAuth();
 
 	documentBuilder.addServer(`http://localhost:${port}`, 'Local Host');
-	console.info(`Added local server for Swagger on http://localhost:${port}`);
+	Logger.info(`Added local server for Swagger on http://localhost:${port}`);
 
 	const swaggerConfig = documentBuilder
 		.addServer('https://api-v1-staging.bondsports.co/v4', 'V2 Staging')
@@ -28,18 +28,14 @@ function configureSwagger(app: INestApplication): void {
 	const swaggerDocument: OpenAPIObject = SwaggerModule.createDocument(app, swaggerConfig);
 
 	SwaggerModule.setup('api', app, swaggerDocument);
-	console.info('Swagger configured successfully.');
+	Logger.info('Swagger configured successfully.');
 }
 
 async function bootstrap(): Promise<void> {
-	const app: INestApplication<AppModule> = await NestFactory.create(AppModule);
-	const microSrv: INestMicroservice = await NestFactory.createMicroservice(EventsModule, {
-		transport: Transport.REDIS,
-		options: {
-			host: 'localhost',
-			port: 6379,
-		},
-	});
+	const [app, eventsService]: [INestApplication<AppModule>, INestMicroservice] = await Promise.all([
+		NestFactory.create(AppModule),
+		NestFactory.createMicroservice(EventsModule, configService.getRedisConfiguration()),
+	]);
 
 	app.use(json({ limit: '50mb' }));
 	app.use(urlencoded({ extended: true, limit: '50mb' }));
@@ -48,8 +44,10 @@ async function bootstrap(): Promise<void> {
 
 	await configService.setupDynamodb();
 
-	await app.listen(configService.getValue(ConfigKeysEnum.PORT));
-	await microSrv.listen();
+	await Promise.all([
+		app.listen(configService.getValue(ConfigKeysEnum.PORT), () => Logger.info('API service started')),
+		eventsService.listen().then(() => Logger.info('Events service started')),
+	]);
 }
 
 bootstrap();

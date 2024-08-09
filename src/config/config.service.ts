@@ -3,6 +3,7 @@ import * as path from 'path';
 import { DynamoDB } from '@aws-sdk/client-dynamodb';
 import * as dynamoose from 'dynamoose';
 import { Logger } from './logger';
+import { Transport } from '@nestjs/microservices';
 
 require('dotenv').config();
 
@@ -15,7 +16,8 @@ export enum ConfigKeysEnum {
 	DYNAMO_DB_NAME = 'DYNAMO_DB_NAME',
 	DYNAMO_DB_REGION = 'DYNAMO_DB_REGION',
 	PUB_SUB_CHANNEL = 'PUB_SUB_CHANNEL',
-	REDIS_WRITER_URL = 'REDIS_WRITER_URL',
+	REDIS_HOST = 'REDIS_HOST',
+	REDIS_PORT = 'REDIS_PORT',
 	NODE_ENV = 'NODE_ENV',
 	MONGODB_DATABASE_URL = 'MONGO_DATABASE_URL',
 	MONGODB_DATABASE_PORT = 'MONGO_DATABASE_PORT',
@@ -90,6 +92,30 @@ class ConfigService {
 
 		return `${protocol}://${user}:${password}@${host}:${port}`;
 	}
+
+	public getRedisConfiguration() {
+		return {
+			transport: Transport.REDIS,
+			options: {
+				host: this.getValue(ConfigKeysEnum.REDIS_HOST),
+				port: this.getValue(ConfigKeysEnum.REDIS_PORT),
+			},
+		};
+	}
+
+	public getKafkaConfiguration() {
+		return {
+			transport: Transport.KAFKA,
+			options: {},
+		};
+	}
+
+	public getRabbitMQConfiguration() {
+		return {
+			transport: Transport.RMQ,
+			options: {},
+		};
+	}
 }
 
 export const configService: ConfigService = new ConfigService(process.env as Env);
@@ -98,7 +124,8 @@ configService.ensureValues([
 	ConfigKeysEnum.DYNAMO_DB_HOST,
 	ConfigKeysEnum.DYNAMO_DB_PORT,
 	ConfigKeysEnum.PUB_SUB_CHANNEL,
-	ConfigKeysEnum.REDIS_WRITER_URL,
+	ConfigKeysEnum.REDIS_PORT,
+	ConfigKeysEnum.REDIS_HOST,
 	ConfigKeysEnum.MONGODB_DATABASE_URL,
 	ConfigKeysEnum.MONGODB_DATABASE_PORT,
 ]);
