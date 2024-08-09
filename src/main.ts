@@ -7,6 +7,16 @@ import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
 import { EventsModule } from './events/events.module';
 import { Logger } from './config/logger';
 
+function catchUnhandledErrors() {
+	process.on('unhandledRejection', (reason: string, p: Promise<any>) => {
+		Logger.error('Unhandled Rejection at:', p, 'reason:', reason);
+	});
+
+	process.on('uncaughtException', (error: Error) => {
+		Logger.error('Uncaught Exception thrown', error);
+	});
+}
+
 function configureSwagger(app: INestApplication): void {
 	const port: number = configService.getPort();
 	const version: string = configService.getVersion();
@@ -32,6 +42,8 @@ function configureSwagger(app: INestApplication): void {
 }
 
 async function bootstrap(): Promise<void> {
+	catchUnhandledErrors();
+
 	const [app, eventsService]: [INestApplication<AppModule>, INestMicroservice] = await Promise.all([
 		NestFactory.create(AppModule),
 		NestFactory.createMicroservice(EventsModule, configService.getRedisConfiguration()),
