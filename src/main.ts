@@ -1,25 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ConfigKeysEnum, configService } from './services/config.service';
-import { INestApplication } from '@nestjs/common';
+import { ConfigKeysEnum, configService } from './config/config.service';
+import { INestApplication, INestMicroservice } from '@nestjs/common';
 import { json, urlencoded } from 'express';
 import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
-import * as dynamoose from 'dynamoose';
-import { DynamoDB } from '@aws-sdk/client-dynamodb';
-import { Logger } from './logger';
-
-async function connectToDynamodb() {
-	const host: string = configService.getValue(ConfigKeysEnum.DYNAMO_DB_HOST);
-	const port: string = configService.getValue(ConfigKeysEnum.DYNAMO_DB_PORT);
-
-	const database: DynamoDB = new dynamoose.aws.ddb.DynamoDB({
-		endpoint: `${host}:${port}`,
-	});
-
-	dynamoose.aws.ddb.set(database);
-
-	Logger.info(`Successfully connected to DynamoDB "${host}" on port "${port}"`);
-}
+import { Transport } from '@nestjs/microservices';
+import { EventsModule } from './events/events.module';
 
 function configureSwagger(app: INestApplication): void {
 	const port: number = configService.getPort();
@@ -47,15 +33,23 @@ function configureSwagger(app: INestApplication): void {
 
 async function bootstrap(): Promise<void> {
 	const app: INestApplication<AppModule> = await NestFactory.create(AppModule);
+	const microSrv: INestMicroservice = await NestFactory.createMicroservice(EventsModule, {
+		transport: Transport.REDIS,
+		options: {
+			host: 'localhost',
+			port: 6379,
+		},
+	});
 
 	app.use(json({ limit: '50mb' }));
 	app.use(urlencoded({ extended: true, limit: '50mb' }));
 
 	configureSwagger(app);
 
-	await connectToDynamodb();
+	await configService.setupDynamodb();
 
 	await app.listen(configService.getValue(ConfigKeysEnum.PORT));
+	await microSrv.listen();
 }
 
 bootstrap();

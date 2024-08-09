@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsOptional, IsUUID } from 'class-validator';
 
-export class PaginationQueryDto {
+export class DynamoPaginationQueryDto {
 	@ApiProperty({ description: 'limit of documents' })
 	@Type(() => Number)
 	@IsInt()
@@ -12,6 +12,17 @@ export class PaginationQueryDto {
 	@IsUUID('4')
 	@IsOptional()
 	lastId?: string;
+}
+
+export class MongoPaginationQueryDto {
+	@ApiProperty({ description: 'Items per page' })
+	@Type(() => Number)
+	@IsInt()
+	itemsPerPage: number;
+
+	@ApiProperty({ description: 'Current page to fetch' })
+	@IsInt()
+	page: number;
 }
 
 export class PaginationResultDto<T> {
