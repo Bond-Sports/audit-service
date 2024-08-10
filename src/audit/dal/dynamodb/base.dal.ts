@@ -1,10 +1,11 @@
-import { IDal } from '../types/intefaces';
+import { IDal } from '../types/interfaces';
 import { IBaseAudit } from '../../models/dynamodb/types/audit.dynamodb.interfaces';
 import { ItemArray, ModelType } from 'dynamoose/dist/General';
 import { Query, QueryResponse } from 'dynamoose/dist/ItemRetriever';
 import { BadRequestException } from '@nestjs/common';
 import * as uuid from 'uuid';
 import { PaginationMetaDto, PaginationQuery, PaginationResultDto } from '@bondsports/types';
+import { i18n } from '../../../i18n';
 
 export abstract class BaseDal<T extends IBaseAudit> implements IDal<T> {
 	protected constructor(private model: ModelType<T>) {}
@@ -12,7 +13,7 @@ export abstract class BaseDal<T extends IBaseAudit> implements IDal<T> {
 	/**
 	 * Returns a paginated result for a given organization
 	 * @param organizationId {number} - The organization ID
-	 * @param pagination {DynamoPaginationQueryDto} - The pagination query
+	 * @param pagination {PaginationQuery} - The pagination query
 	 * @returns {Promise<PaginationResultDto<T>>} - The paginated result
 	 */
 	async paginatedFind(organizationId: number, pagination: PaginationQuery): Promise<PaginationResultDto<T>> {
@@ -58,9 +59,16 @@ export abstract class BaseDal<T extends IBaseAudit> implements IDal<T> {
 	 * @param id {string} - The entity ID
 	 * @returns {Promise<T>} - The entity
 	 */
-	async findById(id: string): Promise<T> {
+	async findById(organizationId: number, id: string): Promise<T> {
 		const response: QueryResponse<T> = await this.model.query('id').eq(id).limit(1).exec();
-		return [...response].at(0);
+
+		const entity: T = [...response].at(0);
+
+		if (entity && entity.organizationId !== organizationId) {
+			throw new BadRequestException(i18n.audit.errors.documentNotOfOrganization(this.model.name, id, organizationId));
+		}
+
+		return entity;
 	}
 
 	/**
@@ -81,8 +89,8 @@ export abstract class BaseDal<T extends IBaseAudit> implements IDal<T> {
 	 * @param data {Partial<T>} - The data to update
 	 * @returns {Promise<T>} - The updated entity
 	 */
-	async update(id: string, data: Partial<T>): Promise<T> {
-		const entity: T = await this.findById(id);
+	async update(organizationId: number, id: string, data: Partial<T>): Promise<T> {
+		const entity: T = await this.findById(organizationId, id);
 
 		if (!entity) {
 			throw new BadRequestException(`Entity of type "${this.model.Model.name}" with ID "${id}" not found`);
@@ -93,11 +101,12 @@ export abstract class BaseDal<T extends IBaseAudit> implements IDal<T> {
 
 	/**
 	 * Delete an entity by its ID
+	 * @param organizationId {number} - The organization ID
 	 * @param id {string} - The entity ID
 	 * @returns {Promise<boolean>} - True if the entity was deleted, false otherwise
 	 */
-	async delete(id: string): Promise<boolean> {
-		await this.update(id, { deletedAt: Date.now() } as Partial<T>);
+	async delete(organizationId: number, id: string): Promise<boolean> {
+		await this.update(organizationId, id, { deletedAt: Date.now() } as Partial<T>);
 		return true;
 	}
 }

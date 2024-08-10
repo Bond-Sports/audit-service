@@ -1,8 +1,9 @@
 import { Controller, Get } from '@nestjs/common';
 import { HealthcheckService } from './services/health-check.service';
 import { HealthCheckResponseDto } from './types/dtos/health-check.dto';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Healthcheck')
 @Controller()
 export class AppController {
 	constructor(private healthCheckService: HealthcheckService) {}

@@ -18,19 +18,27 @@ export class AuditProfile extends AutomapperProfile {
 				AuditLogDto,
 				forMember(
 					log => log.id,
-					mapFrom(log => String(log.id))
+					mapFrom(log => String(log._id))
 				),
 				forMember(
 					log => log.categoryId,
-					mapFrom(log => String(log.category?.id))
+					mapFrom(log => (log.category?._id ? String(log.category?._id) : null))
 				),
 				forMember(
 					log => log.subCategoryId,
-					mapFrom(log => String(log.subCategory?.id))
+					mapFrom(log => (log.subCategory?._id ? String(log.subCategory?._id) : null))
 				),
 				forMember(
 					log => log.actionTypeId,
-					mapFrom(log => String(log.actionType?.id))
+					mapFrom(log => (log.actionType?._id ? String(log.actionType?._id) : null))
+				),
+				forMember(
+					log => log.response,
+					mapFrom(log => log.response)
+				),
+				forMember(
+					log => log.changes,
+					mapFrom(log => log.changes)
 				)
 			);
 			createMap(mapper, AuditLogDto, AuditLog);

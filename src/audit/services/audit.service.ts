@@ -6,7 +6,7 @@ import { AuditLogDal } from '../dal/mongodb/audit-log.dal';
 import { CategoryDal } from '../dal/mongodb/category.dal';
 import { SubCategoryDal } from '../dal/mongodb/sub-category.dal';
 import { ActionTypeDal } from '../dal/mongodb/action-type.dal';
-import { AuditLogDto } from '../types/dto/audit.dto';
+import { AuditLogDto, CreateAuditLogDto } from '../types/dto/audit.dto';
 import { Mapper } from '@automapper/core';
 import { InjectMapper } from '@automapper/nestjs';
 import { AuditLog } from '../models/mongodb/audit-log';
@@ -27,24 +27,38 @@ export class AuditService {
 	 * @param pagination {DynamoPaginationQueryDto} - The pagination query
 	 * @returns {Promise<PaginationResultDto<AuditLog>>} - The paginated result
 	 */
-	getOrganizationAuditLogs(
+	async getOrganizationAuditLogs(
 		organizationId: number,
 		pagination: PaginationQuery
-	): Promise<PaginationResultDto<AuditLog>> {
-		return this.auditLogDal.paginatedFind(organizationId, pagination);
+	): Promise<PaginationResultDto<AuditLogDto>> {
+		const { meta, data } = await this.auditLogDal.paginatedFind(organizationId, pagination);
+
+		return {
+			meta,
+			data: this.mapper.mapArray(data, AuditLog, AuditLogDto),
+		};
 	}
 
 	/**
 	 * Creates an audit log
 	 * @param organizationId {number} - The organization ID
-	 * @param auditLogDto {AuditLogDto} - The audit log to create
+	 * @param auditLogDto {CreateAuditLogDto} - The audit log to create
 	 * @returns {Promise<AuditLogDto>} - The created audit log
 	 */
-	async createAuditLog(organizationId: number, auditLogDto: AuditLogDto): Promise<AuditLogDto> {
+	async createAuditLog(organizationId: number, auditLogDto: CreateAuditLogDto): Promise<AuditLogDto> {
 		const [category, subCategory, actionType] = await promiseAllSettled(
-			useConditionalPromise(() => this.categoryDal.findById(auditLogDto.categoryId), !!auditLogDto.categoryId),
-			useConditionalPromise(() => this.subCategoryDal.findById(auditLogDto.subCategoryId), !!auditLogDto.subCategoryId),
-			useConditionalPromise(() => this.actionTypeDal.findById(auditLogDto.actionTypeId), !!auditLogDto.actionTypeId)
+			useConditionalPromise(
+				() => this.categoryDal.findById(organizationId, auditLogDto.categoryId),
+				!!auditLogDto.categoryId
+			),
+			useConditionalPromise(
+				() => this.subCategoryDal.findById(organizationId, auditLogDto.subCategoryId),
+				!!auditLogDto.subCategoryId
+			),
+			useConditionalPromise(
+				() => this.actionTypeDal.findById(organizationId, auditLogDto.actionTypeId),
+				!!auditLogDto.actionTypeId
+			)
 		);
 
 		if (!category && auditLogDto.categoryId) {

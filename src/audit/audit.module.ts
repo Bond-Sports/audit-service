@@ -5,10 +5,10 @@ import { ActionTypeDal } from './dal/mongodb/action-type.dal';
 import { CategoryDal } from './dal/mongodb/category.dal';
 import { SubCategoryDal } from './dal/mongodb/sub-category.dal';
 import { MongooseModule } from '@nestjs/mongoose';
-import { AuditLog, AuditLogSchema } from './models/mongodb/audit-log';
-import { AuditCategorySchema, Category } from './models/mongodb/category';
-import { AuditSubCategorySchema, SubCategory } from './models/mongodb/sub-category';
-import { ActionType, AuditActionTypeSchema } from './models/mongodb/action-type';
+import { AuditLogSchema } from './models/mongodb/audit-log';
+import { AuditCategorySchema } from './models/mongodb/category';
+import { AuditSubCategorySchema } from './models/mongodb/sub-category';
+import { AuditActionTypeSchema } from './models/mongodb/action-type';
 import { configService } from '../config/config.service';
 import {
 	AUDIT_ACTION_TYPES_COLLECTION,
@@ -19,6 +19,9 @@ import {
 import { AutomapperModule } from '@automapper/nestjs';
 import { classes } from '@automapper/classes';
 import { AuditProfile } from './profile/audit.profile';
+import { CategoryService } from './services/category.service';
+import { SubCategoryService } from './services/sub-category.service';
+import { ActionTypeService } from './services/action-type.service';
 
 @Module({
 	imports: [
@@ -31,7 +34,17 @@ import { AuditProfile } from './profile/audit.profile';
 			strategyInitializer: classes(),
 		}),
 	],
-	providers: [AuditService, AuditLogDal, ActionTypeDal, CategoryDal, SubCategoryDal, AuditProfile],
-	exports: [AuditService],
+	providers: [
+		AuditService,
+		AuditLogDal,
+		ActionTypeDal,
+		CategoryDal,
+		SubCategoryDal,
+		AuditProfile,
+		CategoryService,
+		SubCategoryService,
+		ActionTypeService,
+	],
+	exports: [AuditService, CategoryService, SubCategoryService, ActionTypeService],
 })
 export class AuditModule {}

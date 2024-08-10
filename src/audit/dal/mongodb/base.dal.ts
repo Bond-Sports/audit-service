@@ -1,9 +1,11 @@
 import { FilterQuery, Model, UpdateQuery, UpdateWriteOpResult } from 'mongoose';
 import { promiseAllSettled } from '@bondsports/general';
-import { IDal } from '../types/intefaces';
+import { IDal } from '../types/interfaces';
 import { PaginationQuery, PaginationResultDto } from '@bondsports/types';
 import { Logger } from '../../../config/logger';
 import { IBaseDocument } from '../../models/mongodb/types/audit.interfaces';
+import { BadRequestException } from '@nestjs/common';
+import { i18n } from '../../../i18n';
 
 export abstract class AuditBaseDal<T extends IBaseDocument> implements IDal<T> {
 	protected constructor(protected model: Model<T>) {}
@@ -40,12 +42,20 @@ export abstract class AuditBaseDal<T extends IBaseDocument> implements IDal<T> {
 			.exec();
 	}
 
-	async findById(id: string): Promise<T> {
-		return await this.model.findOne({ _id: { $eq: id }, deletedAt: { $eq: null } } as FilterQuery<T>).exec();
+	async findById(organizationId: number, id: string): Promise<T> {
+		const doc: T = await this.model.findOne({ _id: { $eq: id }, deletedAt: { $eq: null } } as FilterQuery<T>).exec();
+
+		if (doc && doc.organizationId !== organizationId) {
+			throw new BadRequestException(
+				i18n.audit.errors.documentNotOfOrganization(this.model.baseModelName, id, organizationId)
+			);
+		}
+
+		return doc;
 	}
 
-	async update(id: string, entity: Partial<T>): Promise<T> {
-		const doc: T = await this.model.findOne({ _id: { $eq: id } } as FilterQuery<T>).exec();
+	async update(organizationId: number, id: string, entity: Partial<T>): Promise<T> {
+		const doc: T = await this.findById(organizationId, id);
 
 		if (!doc) {
 			Logger.warning(`${this.model.baseModelName} with ID "${id}" not found`);
@@ -66,8 +76,8 @@ export abstract class AuditBaseDal<T extends IBaseDocument> implements IDal<T> {
 		return doc;
 	}
 
-	async delete(id: string): Promise<boolean> {
-		const entity: T = await this.findById(id);
+	async delete(organizationId: number, id: string): Promise<boolean> {
+		const entity: T = await this.findById(organizationId, id);
 
 		if (!entity) {
 			Logger.warning(`Failed to delete ${this.model.baseModelName}: entity not found`);
@@ -75,7 +85,7 @@ export abstract class AuditBaseDal<T extends IBaseDocument> implements IDal<T> {
 		}
 
 		const result: UpdateWriteOpResult = await this.model
-			.updateOne({ _id: { $eq: entity.id } } as FilterQuery<T>, { deletedAt: new Date() } as UpdateQuery<T>)
+			.updateOne({ _id: { $eq: entity._id } } as FilterQuery<T>, { deletedAt: new Date() } as UpdateQuery<T>)
 			.exec();
 
 		return result.modifiedCount > 0;

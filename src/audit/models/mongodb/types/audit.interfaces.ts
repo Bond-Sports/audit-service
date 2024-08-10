@@ -1,7 +1,7 @@
 import { Schema } from 'mongoose';
 
 export interface IBaseDocument {
-	id: Schema.Types.ObjectId;
+	_id: Schema.Types.ObjectId;
 	organizationId: number;
 	createdAt: Date;
 	updatedAt: Date;

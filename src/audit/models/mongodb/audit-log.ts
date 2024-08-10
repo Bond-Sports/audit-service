@@ -9,12 +9,7 @@ import {
 import { AutoMap } from '@automapper/classes';
 import { Schema } from 'mongoose';
 import { AuditBase } from './audit.base';
-import {
-	IActionTypeDocument,
-	IAuditLogDocument,
-	ICategoryDocument,
-	ISubCategoryDocument,
-} from './types/audit.interfaces';
+import { IAuditLogDocument } from './types/audit.interfaces';
 import { Category } from './category';
 import { SubCategory } from './sub-category';
 import { ActionType } from './action-type';
@@ -57,12 +52,12 @@ export class AuditLog extends AuditBase implements IAuditLogDocument {
 	@Prop({ type: Schema.Types.ObjectId, ref: AUDIT_CATEGORIES_COLLECTION, required: false })
 	@Type(() => Category)
 	@AutoMap(() => Category)
-	category: SubCategory;
+	category: Category;
 
 	@Prop({ type: Schema.Types.ObjectId, ref: AUDIT_SUB_CATEGORIES_COLLECTION, required: false })
 	@Type(() => SubCategory)
 	@AutoMap(() => SubCategory)
-	subCategory: Category;
+	subCategory: SubCategory;
 
 	@Prop({ type: Schema.Types.ObjectId, ref: AUDIT_ACTION_TYPES_COLLECTION, required: false })
 	@Type(() => ActionType)

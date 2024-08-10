@@ -25,7 +25,7 @@ export class MongoPaginationQueryDto {
 	page: number;
 }
 
-export class PaginationResultDto<T> {
+export class DynamoPaginationResultDto<T> {
 	@ApiProperty({ description: 'last item id' })
 	lastId: string;
 
