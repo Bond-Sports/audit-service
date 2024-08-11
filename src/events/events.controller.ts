@@ -1,5 +1,5 @@
 import { Controller } from '@nestjs/common';
-import { Ctx, MessagePattern, Payload, RedisContext } from '@nestjs/microservices';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 import { ConfigKeysEnum, configService } from '../config/config.service';
 import { AuditService } from '../audit/services/audit.service';
 import { AuditLogDto, CreateAuditLogEventDto } from '../audit/types/dto/audit.dto';
@@ -12,7 +12,7 @@ export class EventsController {
 	constructor(private auditService: AuditService) {}
 
 	@MessagePattern(PUB_SUB_CHANNEL)
-	async onMessage(@Payload() data: CreateAuditLogEventDto, @Ctx() context: RedisContext): Promise<void> {
+	async onMessage(@Payload() data: CreateAuditLogEventDto): Promise<void> {
 		try {
 			Logger.info(
 				`EventsController channel "${PUB_SUB_CHANNEL}" - Received message for organization "${data.organizationId}",`,

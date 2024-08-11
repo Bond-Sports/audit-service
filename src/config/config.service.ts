@@ -23,6 +23,14 @@ export enum ConfigKeysEnum {
 	MONGODB_DATABASE_PORT = 'MONGO_DATABASE_PORT',
 	MONGODB_DATABASE_USER = 'MONGO_DATABASE_USER',
 	MONGODB_DATABASE_PASSWORD = 'MONGO_DATABASE_PASSWORD',
+	PUB_SUB_TRANSPORT = 'PUB_SUB_TRANSPORT',
+	KAFKA_URL = 'KAFKA_URL',
+}
+
+enum PubSubBrokerEnum {
+	REDIS = 'REDIS',
+	KAFKA = 'KAFKA',
+	RMQ = 'RMQ',
 }
 
 type Env = { [key in ConfigKeysEnum]: string } & Record<string, string>;
@@ -93,7 +101,7 @@ class ConfigService {
 		return `${protocol}://${user}:${password}@${host}:${port}`;
 	}
 
-	public getRedisConfiguration() {
+	private getRedisConfiguration() {
 		return {
 			transport: Transport.REDIS,
 			options: {
@@ -103,18 +111,36 @@ class ConfigService {
 		};
 	}
 
-	public getKafkaConfiguration() {
+	private getKafkaConfiguration() {
 		return {
 			transport: Transport.KAFKA,
-			options: {},
+			options: {
+				consumer: { groupId: 'test' },
+				broker: [this.getValue(ConfigKeysEnum.KAFKA_URL)],
+				subscribe: { topics: [this.getValue(ConfigKeysEnum.PUB_SUB_CHANNEL)] },
+			},
 		};
 	}
 
-	public getRabbitMQConfiguration() {
+	private getRabbitMQConfiguration() {
 		return {
 			transport: Transport.RMQ,
 			options: {},
 		};
+	}
+
+	public getMicroServiceConfiguration(): { transport: Transport; options: any } {
+		const broker: string = String(this.getValue(ConfigKeysEnum.PUB_SUB_TRANSPORT)).toUpperCase();
+		switch (broker) {
+			case PubSubBrokerEnum.REDIS:
+				return this.getRedisConfiguration();
+			case PubSubBrokerEnum.KAFKA:
+				return this.getKafkaConfiguration();
+			case PubSubBrokerEnum.RMQ:
+				return this.getRabbitMQConfiguration();
+			default:
+				throw new Error(`Unknown broker type: ${broker}`);
+		}
 	}
 }
 
@@ -128,4 +154,5 @@ configService.ensureValues([
 	ConfigKeysEnum.REDIS_HOST,
 	ConfigKeysEnum.MONGODB_DATABASE_URL,
 	ConfigKeysEnum.MONGODB_DATABASE_PORT,
+	ConfigKeysEnum.PUB_SUB_TRANSPORT,
 ]);

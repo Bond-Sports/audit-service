@@ -59,7 +59,7 @@ async function bootstrap(): Promise<void> {
 
 	const [app, eventsService]: [INestApplication<AppModule>, INestMicroservice] = await Promise.all([
 		NestFactory.create(AppModule),
-		NestFactory.createMicroservice(EventsModule, configService.getRedisConfiguration()),
+		NestFactory.createMicroservice(EventsModule, configService.getMicroServiceConfiguration()),
 	]);
 
 	configureApp(app);
