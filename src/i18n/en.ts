@@ -8,4 +8,22 @@ export const en = {
 				`${entityType} with id "${documentId}" does not belong to organization with id "${organizationId}"`,
 		},
 	},
+	categories: {
+		errors: {
+			categoryAlreadyExists: (organizationId: number, name: string) =>
+				`Category with name "${name}" already exists for organization "${organizationId}"`,
+		},
+	},
+	subCategories: {
+		errors: {
+			subCategoryAlreadyExists: (organizationId: number, name: string) =>
+				`SubCategory with name "${name}" already exists for organization "${organizationId}"`,
+		},
+	},
+	actionTypes: {
+		errors: {
+			actionTypeAlreadyExists: (organizationId: number, name: string) =>
+				`ActionType with name "${name}" already exists for organization "${organizationId}"`,
+		},
+	},
 };

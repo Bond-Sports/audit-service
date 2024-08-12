@@ -6,7 +6,7 @@ export class DynamoPaginationQueryDto {
 	@ApiProperty({ description: 'limit of documents' })
 	@Type(() => Number)
 	@IsInt()
-	limit: number;
+	itemsPerPage: number;
 
 	@ApiProperty({ description: 'last id of the last document fetched' })
 	@IsUUID('4')

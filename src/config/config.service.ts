@@ -31,6 +31,7 @@ enum PubSubBrokerEnum {
 	REDIS = 'REDIS',
 	KAFKA = 'KAFKA',
 	RMQ = 'RMQ',
+	SQS = 'SQS',
 }
 
 type Env = { [key in ConfigKeysEnum]: string } & Record<string, string>;

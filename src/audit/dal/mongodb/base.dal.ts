@@ -1,4 +1,4 @@
-import { FilterQuery, Model, UpdateQuery, UpdateWriteOpResult } from 'mongoose';
+import { FilterQuery, Model, ObjectId, UpdateQuery, UpdateWriteOpResult } from 'mongoose';
 import { promiseAllSettled } from '@bondsports/general';
 import { IDal } from '../types/interfaces';
 import { PaginationQuery, PaginationResultDto } from '@bondsports/types';
@@ -78,6 +78,24 @@ export abstract class AuditBaseDal<T extends IBaseDocument> implements IDal<T> {
 
 	async delete(organizationId: number, id: string): Promise<boolean> {
 		const entity: T = await this.findById(organizationId, id);
+
+		if (!entity) {
+			Logger.warning(`Failed to delete ${this.model.baseModelName}: entity not found`);
+			return false;
+		}
+
+		const result: UpdateWriteOpResult = await this.model
+			.updateOne({ _id: { $eq: entity._id } } as FilterQuery<T>, { deletedAt: new Date() } as UpdateQuery<T>)
+			.exec();
+
+		return result.modifiedCount > 0;
+	}
+
+	async deleteBy<K extends keyof T>(
+		organizationId: number,
+		condition: Record<K, T[K] extends ObjectId ? string : T[K]>
+	): Promise<boolean> {
+		const entity: T = await this.model.findOne({ organizationId: { $eq: organizationId }, ...condition }).exec();
 
 		if (!entity) {
 			Logger.warning(`Failed to delete ${this.model.baseModelName}: entity not found`);

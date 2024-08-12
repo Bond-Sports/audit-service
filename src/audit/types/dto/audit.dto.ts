@@ -3,7 +3,8 @@ import { ArrayNotEmpty, IsArray, IsIn, IsInt, IsOptional, IsString, IsUrl, Max, 
 import { HttpVerbsEnum } from '../../../types/enums';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { STRING_DEFAULT_LIMIT } from '@bondsports/general';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
+import { ByOrganizationIdDto } from '@bondsports/types';
 
 export abstract class AuditBaseDto {
 	@AutoMap()
@@ -227,4 +228,15 @@ export class AuditLogDto extends AuditBaseDto {
 	@AutoMap(() => ActionTypeDto)
 	@Type(() => ActionTypeDto)
 	actionType: ActionTypeDto;
+}
+
+export class DeleteByIdDto extends ByOrganizationIdDto {
+	@ApiProperty({ description: 'ID' })
+	@IsString()
+	id: string;
+
+	@ApiPropertyOptional({ description: 'Include audit logs' })
+	@Transform(({ value }) => value === 'true')
+	@IsOptional()
+	includeAuditLogs?: boolean;
 }

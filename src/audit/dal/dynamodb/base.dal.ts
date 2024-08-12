@@ -1,11 +1,11 @@
-import { IDal } from '../types/interfaces';
+import { IDal, TPaginationResult } from '../types/interfaces';
 import { IBaseAudit } from '../../models/dynamodb/types/audit.dynamodb.interfaces';
 import { ItemArray, ModelType } from 'dynamoose/dist/General';
 import { Query, QueryResponse } from 'dynamoose/dist/ItemRetriever';
 import { BadRequestException } from '@nestjs/common';
 import * as uuid from 'uuid';
-import { PaginationMetaDto, PaginationQuery, PaginationResultDto } from '@bondsports/types';
 import { i18n } from '../../../i18n';
+import { DynamoPaginationQueryDto, DynamoPaginationResultDto } from '../../../types/dtos/general.dto';
 
 export abstract class BaseDal<T extends IBaseAudit> implements IDal<T> {
 	protected constructor(private model: ModelType<T>) {}
@@ -13,15 +13,15 @@ export abstract class BaseDal<T extends IBaseAudit> implements IDal<T> {
 	/**
 	 * Returns a paginated result for a given organization
 	 * @param organizationId {number} - The organization ID
-	 * @param pagination {PaginationQuery} - The pagination query
-	 * @returns {Promise<PaginationResultDto<T>>} - The paginated result
+	 * @param pagination {DynamoPaginationQueryDto} - The pagination query
+	 * @returns {Promise<DynamoPaginationResultDto<T>>} - The paginated result
 	 */
-	async paginatedFind(organizationId: number, pagination: PaginationQuery): Promise<PaginationResultDto<T>> {
+	async paginatedFind(organizationId: number, pagination: DynamoPaginationQueryDto): Promise<TPaginationResult<T>> {
 		const queryBuilder: Query<T> = this.model.query({ organizationId }).limit(pagination.itemsPerPage);
 
-		// if (pagination.lastId) {
-		// 	queryBuilder.startAt({ id: pagination.lastId, organizationId });
-		// }
+		if (pagination.lastId) {
+			queryBuilder.startAt({ id: pagination.lastId, organizationId });
+		}
 
 		queryBuilder.filter('deletedAt').not().exists();
 
@@ -30,9 +30,9 @@ export abstract class BaseDal<T extends IBaseAudit> implements IDal<T> {
 		const entities: T[] = await response.populate();
 
 		return {
-			meta: {} as PaginationMetaDto,
+			lastId: response.lastKey?.id,
 			data: entities,
-		};
+		} as DynamoPaginationResultDto<T>;
 	}
 
 	/**
