@@ -70,9 +70,12 @@ export class CategoryService {
 		const success: boolean = await this.categoryDal.delete(organizationId, categoryId);
 
 		if (includeAudits && success) {
+			// Todo - add logs
 			await this.auditLogDal.deleteBy(organizationId, { categoryId: categoryId });
 		}
 
 		return success;
 	}
+
+	// Todo - add updateCategory method it shuold be similar to createActionType and deleteCategory
 }

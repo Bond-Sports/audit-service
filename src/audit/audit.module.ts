@@ -24,6 +24,19 @@ import { SubCategoryService } from './services/sub-category.service';
 import { ActionTypeService } from './services/action-type.service';
 
 @Module({
+	// Todo - the MongooseModule.forFeature is called multiple times, which can be consolidated into a single call to improve readability and reduce redundancy.
+	// Todo - rename the schema to be LogSchema, CategorySchema, SubCategorySchema, ActionTypeSchema to be more descriptive
+	// Todo - The MongooseModule.forRoot(configService.getMongoUrl()) tightly couples the module to the configuration service. While this is fine for many cases, you could inject this configuration dynamically, allowing for easier testing and more flexible configurations.
+	/*example
+	MongooseModule.forRootAsync({
+		useFactory: async (configService: ConfigService) => ({
+			uri: configService.getMongoUrl(),
+		}),
+		inject: [ConfigService],
+	}),
+	*/
+
+	// Todo - *Only if we see it agregate more modules* While the AutomapperModule is well-integrated, you might want to consider separating the automapper configuration into its own module if it's used across multiple modules in your application. This would reduce duplication and improve the maintainability of your mapping configurations.
 	imports: [
 		MongooseModule.forRoot(configService.getMongoUrl()),
 		MongooseModule.forFeature([{ name: AUDIT_LOGS_COLLECTION, schema: AuditLogSchema }]),

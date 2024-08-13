@@ -3,6 +3,9 @@ import * as os from 'os';
 import * as child_process from 'child_process';
 import { HealthCheckResponseDto } from '../types/dtos/health-check.dto';
 
+// Todo - Storing old CPU metrics as global variables (oldCPUTime, oldCPUIdle) might lead to unexpected results 
+// if multiple instances of HealthcheckService are created or if the application scales horizontally. 
+// Consider moving these to instance variables within the service
 let oldCPUTime: number = 0;
 let oldCPUIdle: number = 0;
 
@@ -45,6 +48,8 @@ export class HealthcheckService {
 
 		const cpuUsage: number = this.checkCpuUsage();
 		const memoryUsage: number = this.checkMemoryUsage();
+		// Todo - Consider adding more robust error handling, especially in the checkHealth method. 
+		// If one of the checks fails (e.g., disk check), the method should still return a response, potentially marking only that part as unhealthy.
 		const diskFreeSpaceInMegaBytes: number = (await this.checkDiscFreeSpaceInKilobytes()) / 1024;
 
 		const cpuHealthy: boolean = cpuUsage < this.cpuUnhealthyThresholdPercentage;
@@ -94,6 +99,10 @@ export class HealthcheckService {
 		const freeMemoryInBytes = os.freemem();
 		const totalMemoryInBytes = os.totalmem();
 
+		// Todo -The memory usage calculation in checkMemoryUsage is inverted. 
+		// You're returning the percentage of free memory instead of used memory. It should be:
+		// return 100 - (freeMemoryInBytes / totalMemoryInBytes) * 100;
+		// This way, you'll get the percentage of used memory, which is more intuitive.
 		return (freeMemoryInBytes / totalMemoryInBytes) * 100;
 	}
 
