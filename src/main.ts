@@ -17,10 +17,13 @@ function catchUnhandledErrors() {
 	});
 }
 
+
 function configureSwagger(app: INestApplication): void {
 	const port: number = configService.getPort();
 	const version: string = configService.getVersion();
 
+	// Toto we are not in Kansas anymore
+	// Todo - we need to move the swagger to the service naming 
 	const documentBuilder: DocumentBuilder = new DocumentBuilder()
 		.setDescription('The API2 description')
 		.setTitle('API2 Swagger')

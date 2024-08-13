@@ -5,7 +5,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { STRING_DEFAULT_LIMIT } from '@bondsports/general';
 import { Transform, Type } from 'class-transformer';
 import { ByOrganizationIdDto } from '@bondsports/types';
-
+// Todo Add swagger documentation
 export abstract class AuditBaseDto {
 	@AutoMap()
 	id: string;

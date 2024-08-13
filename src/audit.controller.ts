@@ -7,11 +7,15 @@ import { CategoryService } from './audit/services/category.service';
 import { SubCategoryService } from './audit/services/sub-category.service';
 import { ActionTypeService } from './audit/services/action-type.service';
 
+// Todo - more structure - break the audit controller to multiple controllers
+
 @ApiTags('Audit')
+// Todo - @Controller('organization/:organizationId/audit')
 @Controller('audit/organization/:organizationId')
 export class AuditController {
 	constructor(
 		private auditService: AuditService,
+		// Todo - we need to to talk about the CategoryService, SubCategoryService, I think it is the same service
 		private categoryService: CategoryService,
 		private subCategoryService: SubCategoryService,
 		private actionTypeService: ActionTypeService
@@ -19,15 +23,16 @@ export class AuditController {
 
 	@Get()
 	@ApiParam({ name: 'organizationId', type: 'integer' })
-	@ApiQuery({ name: 'pagination', type: PaginationQuery })
+	@ApiQuery({ name: 'pagination', type: PaginationQuery }) // Todo - veriy me but I think you'll have a duplicaiton in the query params in the swagger
 	@ApiOperation({ description: 'Get organization audit logs', operationId: 'getOrganizationAuditLogs' })
 	getOrganizationAuditLogs(
 		@Param() { organizationId }: ByOrganizationIdDto,
-		@Query() pagination: PaginationQuery
+		@Query() pagination: PaginationQuery // Todo - we need to extent the query - we will want to get the audit log base Category, SubCategory, ActionType and also by date range, and user & user role
 	): Promise<PaginationResultDto<AuditLogDto>> {
 		return this.auditService.getOrganizationAuditLogs(organizationId, pagination);
 	}
 
+	// Todo - the category, sub-category api are swaged check the name of the api and the service 
 	@Get('categories')
 	@ApiParam({ name: 'organizationId', type: 'integer' })
 	@ApiQuery({ name: 'pagination', type: PaginationQuery })

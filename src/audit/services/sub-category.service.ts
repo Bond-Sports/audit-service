@@ -8,6 +8,7 @@ import { SubCategory } from '../models/mongodb/sub-category';
 import { i18n } from '../../i18n';
 import { Logger } from '../../config/logger';
 
+// Todo - sub-category service shuold be in category service I think it redundant
 @Injectable()
 export class SubCategoryService {
 	constructor(

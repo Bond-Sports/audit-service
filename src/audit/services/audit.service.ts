@@ -46,6 +46,7 @@ export class AuditService {
 	 * @returns {Promise<AuditLogDto>} - The created audit log
 	 */
 	async createAuditLog(organizationId: number, auditLogDto: CreateAuditLogDto): Promise<AuditLogDto> {
+		// Todo - you can combine the find and the validation in one step
 		const [category, subCategory, actionType] = await promiseAllSettled(
 			useConditionalPromise(
 				() => this.categoryDal.findById(organizationId, auditLogDto.categoryId),
